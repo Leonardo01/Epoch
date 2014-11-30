@@ -2,13 +2,13 @@
 	DayZ Base Building
 	Made for DayZ Epoch please ask permission to use/edit/distrubute email vbawol@veteranbastards.com.
 */
-private ["_location","_dir","_classname","_item","_hasrequireditem","_missing","_hastoolweapon","_cancel","_reason","_started","_finished","_animState","_isMedic","_dis","_sfx","_hasbuilditem","_tmpbuilt","_onLadder","_isWater","_require","_text","_offset","_IsNearPlot","_isOk","_location1","_location2","_counter","_limit","_proceed","_num_removed","_position","_object","_canBuildOnPlot","_friendlies","_nearestPole","_ownerID","_findNearestPoles","_findNearestPole","_distance","_classnametmp","_ghost","_isPole","_needText","_lockable","_zheightchanged","_rotate","_combination_1","_combination_2","_combination_3","_combination_4","_combination","_combination_1_Display","_combinationDisplay","_zheightdirection","_abort","_isNear","_need","_needNear","_vehicle","_inVehicle","_requireplot","_objHDiff","_isLandFireDZ","_isTankTrap","_playerID", "_playerUID","_ownerID"];
+private ["_location","_dir","_classname","_item","_hasrequireditem","_missing","_hastoolweapon","_cancel","_reason","_started","_finished","_animState","_isMedic","_dis","_sfx","_hasbuilditem","_tmpbuilt","_onLadder","_isWater","_require","_text","_offset","_IsNearPlot","_isOk","_location1","_location2","_counter","_limit","_proceed","_num_removed","_position","_object","_canBuildOnPlot","_friendlies","_nearestPole","_ownerID","_findNearestPoles","_findNearestPole","_distance","_classnametmp","_ghost","_isPole","_needText","_lockable","_zheightchanged","_rotate","_combination_1","_combination_2","_combination_3","_combination_4","_combination","_combination_1_Display","_combinationDisplay","_zheightdirection","_abort","_isNear","_need","_needNear","_vehicle","_inVehicle","_requireplot","_objHDiff","_isLandFireDZ","_isTankTrap","_playerID", "_playerUID","_ownerID","_buildcheck","_isowner","_isfriendly","_maxBuildDistance"];
 
 if(DZE_ActionInProgress) exitWith { cutText [(localize "str_epoch_player_40") , "PLAIN DOWN"]; };
 DZE_ActionInProgress = true;
 
 // disallow building if too many objects are found within 30m
-if((count ((getPosATL player) nearObjects ["All",30])) >= DZE_BuildingLimit) exitWith {DZE_ActionInProgress = false; cutText [(localize "str_epoch_player_41"), "PLAIN DOWN"];};
+if((count (([player] call FNC_GetPos) nearObjects ["All",30])) >= DZE_BuildingLimit) exitWith {DZE_ActionInProgress = false; cutText [(localize "str_epoch_player_41"), "PLAIN DOWN"];};
 
 _onLadder =		(getNumber (configFile >> "CfgMovesMaleSdr" >> "States" >> (animationState player) >> "onLadder")) == 1;
 _isWater = 		dayz_isSwimming;
@@ -63,7 +63,7 @@ _needNear = 	getArray (configFile >> "CfgMagazines" >> _item >> "ItemActions" >>
 		case "fire":
 		{
 			_distance = 3;
-			_isNear = {inflamed _x} count (getPosATL player nearObjects _distance);
+			_isNear = {inflamed _x} count (([player] call FNC_GetPos) nearObjects _distance);
 			if(_isNear == 0) then {
 				_abort = true;
 				_reason = "fire";
@@ -112,6 +112,8 @@ if(isNumber (configFile >> "CfgVehicles" >> _classname >> "requireplot")) then {
 	_requireplot = getNumber(configFile >> "CfgVehicles" >> _classname >> "requireplot");
 };
 
+if (_requireplot == 0) then{_requireplot = false}else{_requireplot = true};
+
 _isAllowedUnderGround = 1;
 if(isNumber (configFile >> "CfgVehicles" >> _classname >> "nounderground")) then {
 	_isAllowedUnderGround = getNumber(configFile >> "CfgVehicles" >> _classname >> "nounderground");
@@ -149,36 +151,22 @@ if(_isPole && _IsNearPlot > 0) exitWith {  DZE_ActionInProgress = false; cutText
 
 if(_IsNearPlot == 0) then {
 
-	// Allow building of plot
-	if(_requireplot == 0 || _isLandFireDZ) then {
+	// Allow building of plotpole or items not requiring a plot pole
+	if(!(_requireplot) || _isLandFireDZ) then {
 		_canBuildOnPlot = true;
 	};
 
 } else {
-	// Since there are plots nearby we check for ownership && then for friend status
+	// Since there are plot poles nearby we need to check ownership && friend status
 
-	// check nearby plots ownership && then for friend status
+	// check nearest pole only
 	_nearestPole = _findNearestPole select 0;
 
-	// Find owner
-	_ownerID = _nearestPole getVariable ["ownerPUID","0"];
-
-	// check if friendly to owner
-	if(_playerID == _ownerID) then {  //Keep ownership
-		// owner can build anything within his plot except other plots
-		if(!_isPole) then {
-			_canBuildOnPlot = true;
-		};
-
-	} else {
-		// disallow building plot
-		if(!_isPole) then {
-			_friendlies		= player getVariable ["friendlyTo",[]];
-			// check if friendly to owner
-			if(_ownerID in _friendlies) then {
-				_canBuildOnPlot = true;
-			};
-		};
+	_buildcheck = [player, _nearestPole] call FNC_check_owner;
+	_isowner = _buildcheck select 0;
+	_isfriendly = _buildcheck select 1;
+	if ((_isowner) || (_isfriendly)) then {
+		_canBuildOnPlot = true;
 	};
 };
 
@@ -201,8 +189,19 @@ if (_hasrequireditem) then {
 	_location = [0,0,0];
 	_isOk = true;
 
-	// get inital players position
-	_location1 = getPosATL player;
+	// get initial players position & set max build range origin.
+	if ((DZE_BuildInPlotRadius) && (_requireplot)) then{
+		_location1 = [_nearestPole] call FNC_GetPos;
+		_maxBuildDistance = _Distance / 2;
+		diag_log text "Pole initial location.";
+	}else{
+		_location1 = [player] call FNC_GetPos;
+		_maxBuildDistance = 5;
+		diag_log text "Player initial location.";
+	};
+	
+	diag_log format["[Player_Build] _location1 = %1, _maxBuildDistance = %2, DZE_BuildInPlotRadius = %3, _requireplot = %4",_location1, _maxBuildDistance, DZE_BuildInPlotRadius, _requireplot];
+	
 	_dir = getDir player;
 
 	// if ghost preview available use that instead
@@ -214,7 +213,7 @@ if (_hasrequireditem) then {
 
 	_object attachTo [player,_offset];
 
-	_position = getPosATL _object;
+	_position = [_object] call FNC_GetPos;
 
 	cutText [(localize "str_epoch_player_45"), "PLAIN DOWN"];
 
@@ -269,40 +268,58 @@ if (_hasrequireditem) then {
 
 		if(_rotate) then {
 			_object setDir _dir;
-			_object setPosATL _position;
+			[_object,_position] call FNC_SetPos;
 			//diag_log format["DEBUG Rotate BUILDING POS: %1", _position];
 		};
 
 		if(_zheightchanged) then {
 			detach _object;
 
-			_position = getPosATL _object;
+			_position = [_object] call FNC_GetPos;
 
 			if(_zheightdirection == "up") then {
+				diag_log text "up pressed";
+				diag_log format["Old position = %1",_position];
 				_position set [2,((_position select 2)+0.1)];
 				_objHDiff = _objHDiff + 0.1;
+				diag_log format["New position = %1",_position];
 			};
 			if(_zheightdirection == "down") then {
+				diag_log text "down pressed";
+				diag_log format["Old position = %1",_position];
 				_position set [2,((_position select 2)-0.1)];
 				_objHDiff = _objHDiff - 0.1;
+				diag_log format["New position = %1",_position];
 			};
 
 			if(_zheightdirection == "up_alt") then {
+				diag_log text "up_alt pressed";
+				diag_log format["Old position = %1",_position];
 				_position set [2,((_position select 2)+1)];
 				_objHDiff = _objHDiff + 1;
+				diag_log format["New position = %1",_position];
 			};
 			if(_zheightdirection == "down_alt") then {
+				diag_log text "down_alt pressed";
+				diag_log format["Old position = %1",_position];
 				_position set [2,((_position select 2)-1)];
 				_objHDiff = _objHDiff - 1;
+				diag_log format["New position = %1",_position];
 			};
 
 			if(_zheightdirection == "up_ctrl") then {
+				diag_log text "up_ctrl pressed";
+				diag_log format["Old position = %1",_position];
 				_position set [2,((_position select 2)+0.01)];
 				_objHDiff = _objHDiff + 0.01;
+				diag_log format["New position = %1",_position];
 			};
 			if(_zheightdirection == "down_ctrl") then {
+				diag_log text "down_ctrl pressed";
+				diag_log format["Old position = %1",_position];
 				_position set [2,((_position select 2)-0.01)];
 				_objHDiff = _objHDiff - 0.01;
+				diag_log format["New position = %1",_position];
 			};
 
 			_object setDir (getDir _object);
@@ -311,9 +328,9 @@ if (_hasrequireditem) then {
 				_position set [2,0];
 			};
 
-			_object setPosATL _position;
+			[_object,_position] call FNC_SetPos;
 
-			//diag_log format["DEBUG Change BUILDING POS: %1", _position];
+			diag_log format["DEBUG Change BUILDING POS: %1", _position];
 
 			_object attachTo [player];
 
@@ -321,21 +338,23 @@ if (_hasrequireditem) then {
 
 		sleep 0.5;
 
-		_location2 = getPosATL player;
+		_location2 = [_object] call FNC_GetPos;
 
 		if(DZE_5) exitWith {
 			_isOk = false;
 			detach _object;
 			_dir = getDir _object;
-			_position = getPosATL _object;
+			_position = [_object] call FNC_GetPos;
 			//diag_log format["DEBUG BUILDING POS: %1", _position];
 			deleteVehicle _object;
 		};
 
-		if(_location1 distance _location2 > 5) exitWith {
+		diag_log format["[Player_Build] _location1 = %1, _location2 = %2, _maxBuildDistance = %3",_location1, _location2, _maxBuildDistance];
+		
+		if(_location1 distance _location2 > _maxBuildDistance) exitWith {
 			_isOk = false;
 			_cancel = true;
-			_reason = "You've moved to far away from where you started building (within 5 meters)";
+			_reason = format["You've moved more than max build range of %1 mtrs.",_maxBuildDistance];
 			detach _object;
 			deleteVehicle _object;
 		};
@@ -372,6 +391,22 @@ if (_hasrequireditem) then {
 
 	// No building in trader zones
 	if(!canbuild) then { _cancel = true; _reason = "Cannot build in a city."; };
+	
+	if ((DZE_BuildOnGround) && !(_requireplot)) then{
+		_toohigh = false;
+		if (_ispole) then{
+			if ((_position select 2) > DZE_MaxPlotHeight) then{_toohigh = true};
+		}else{
+			if ((_position select 2) > DZE_MaxNoPlotNeededHeight) then{_toohigh = true};
+		};
+		if (_toohigh) exitWith {
+			_isOk = false;
+			_cancel = true;
+			_reason = "This item must be built at ground level.";
+			detach _object;
+			deleteVehicle _object;
+		};
+	};
 
 	if(!_cancel) then {
 
@@ -389,8 +424,7 @@ if (_hasrequireditem) then {
 			_location set [2,0];
 		};
 
-		_tmpbuilt setPosATL _location;
-
+		[_tmpbuilt, _location] call FNC_SetPos;
 
 		cutText [format[(localize "str_epoch_player_138"),_text], "PLAIN DOWN"];
 
@@ -417,7 +451,7 @@ if (_hasrequireditem) then {
 			_dis=20;
 			_sfx = "repair";
 			[player,_sfx,0,false,_dis] call dayz_zombieSpeak;
-			[player,_dis,true,(getPosATL player)] spawn player_alertZombies;
+			[player,_dis,true,([player] call FNC_GetPos)] spawn player_alertZombies;
 
 			r_interrupt = false;
 			r_doLoop = true;

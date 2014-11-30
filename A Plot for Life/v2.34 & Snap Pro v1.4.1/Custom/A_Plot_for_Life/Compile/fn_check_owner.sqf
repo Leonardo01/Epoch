@@ -7,7 +7,7 @@ _Object = _this select 1;
 _Owner = false;
 _friendly = false;
 
-_playerUID = [player] call FNC_GetPlayerUID;
+_playerUID = [_player] call FNC_GetPlayerUID;
 
 if (DZE_APlotforLife) then {
 	_ownerUID = _playerUID;
@@ -21,7 +21,7 @@ if (_ownerUID == _ObjectOwner) then {
 	_owner = true;
 };
 
-_friendlies	= player getVariable ["friendlyTo",[]];
+_friendlies	= _player getVariable ["friendlyTo",[]];
 
 if (_ownerUID in _friendlies) then {
 	_friendly = true;

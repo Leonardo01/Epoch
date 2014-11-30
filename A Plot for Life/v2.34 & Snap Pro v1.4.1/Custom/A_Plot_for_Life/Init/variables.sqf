@@ -560,6 +560,18 @@ if (isNil "DZE_APlotforLife") then {
 if (isNil "DZE_PlotOwnership") then {
 	DZE_PlotOwnership = false;
 };
+if (isNil "DZE_BuildInPlotRadius") then {
+	DZE_BuildInPlotRadius = false;
+};
+if (isNil "DZE_BuildOnGround") then {
+	DZE_BuildOnGround = false;
+};
+if (isNil "DZE_MaxNoPlotNeededHeight") then {
+	DZE_MaxNoPlotNeededHeight = 15;
+};
+if (isNil "DZE_MaxPlotHeight") then {
+	DZE_MaxPlotHeight = 0.5;
+};
 if (isNil "DZE_checkNearbyRadius") then {
 	DZE_checkNearbyRadius = 30;
 };

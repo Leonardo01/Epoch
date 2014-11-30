@@ -44,7 +44,7 @@ if ((_isowner select 0 )) then {
 					_charID =		dayz_characterID;
 				};
 				
-				_position = 	getPosATL _object;
+				_position = 	[_object] call FNC_GetPos;
 				_worldspace = 	[round(direction _object),_position,_playerUID];
 
 				_invW = getWeaponCargo _object;
