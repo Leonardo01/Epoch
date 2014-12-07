@@ -587,18 +587,6 @@ if (!isDedicated) then {
 		_pos
 	};
 	
-	FNC_SetPos = {
-		private "_pos";
-		if (isNil {_this select 0} || isNil{_this select 1}) exitWith {diag_log format["[FNC_SetPos] cannot set position of %1 to %2",(_this select 0),(_this select 1)]};
-		_thingy = _this select 0;
-		_pos = _this select 1;
-		if (surfaceIsWater _pos) then {
-			_thingy setPosASL _pos;
-		} else {
-			_thingy setPosATL _pos;
-		};
-	};
-	
 	local_setFuel =	{
 		private["_qty","_vehicle"];
 		_vehicle = _this select 0;
