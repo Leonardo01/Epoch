@@ -10,7 +10,7 @@ _isPole = _this select 5;
 _lockable = _this select 6;
 _dir = _this select 7;
 _reason = _this select 8;
-_requireplot = this select 9;
+_requireplot = _this select 9;
 
 _playerUID = [player] call FNC_GetPlayerUID;
 
