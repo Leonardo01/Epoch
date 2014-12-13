@@ -4,6 +4,7 @@ _object = _this select 0;
 _isAllowedUnderGround = _this select 1;
 _location1 = _this select 2;
 _objectHelper  = _this select 3;
+_maxBuildDistance = _this select 4;
 
 _passArray = [];
 
@@ -148,7 +149,7 @@ while {_isOk} do {
 
 	sleep 0.5;
 
-	_location2 = [player] call FNC_GetPos;
+	_location2 = [_object] call FNC_GetPos;
 	_objectHelperPos = [_objectHelper] call FNC_GetPos;
 	
 	if(DZE_5) exitWith {
@@ -161,14 +162,16 @@ while {_isOk} do {
 		deleteVehicle _objectHelper;
 	};
 
-	if(_location1 distance _location2 > 10) exitWith {
-		_isOk = false;
-		_cancel = true;
-		_reason = "You've moved to far away from where you started building (within 10 meters)";
-		detach _object;
-		deleteVehicle _object;
-		detach _objectHelper;
-		deleteVehicle _objectHelper;
+	diag_log format["[Player_Build] _location1 = %1, _location2 = %2, _maxBuildDistance = %3",_location1, _location2, _maxBuildDistance];
+		
+	if(_location1 distance _location2 > _maxBuildDistance) exitWith {
+			_isOk = false;
+			_cancel = true;
+			_reason = format["You've moved more than max build range of %1 mtrs.",_maxBuildDistance];
+			detach _object;
+			deleteVehicle _object;
+			detach _objectHelper;
+			deleteVehicle _objectHelper;
 	};
 	
 	if(_location1 distance _objectHelperPos > 10) exitWith {
@@ -181,10 +184,10 @@ while {_isOk} do {
 		deleteVehicle _objectHelper;
 	};
 
-	if(abs(_objHDiff) > 10) exitWith {
+	if(abs(_objHDiff) > 5) exitWith {
 		_isOk = false;
 		_cancel = true;
-		_reason = "Cannot move up or down more than 10 meters";
+		_reason = "Cannot move up or down more than 5 meters";
 		detach _object;
 		deleteVehicle _object;
 		detach _objectHelper;

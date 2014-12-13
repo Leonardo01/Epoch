@@ -1,4 +1,4 @@
-private ["_passArray","_cancel","_position","_reason","_classnametmp","_classname","_tmpbuilt","_dir","_location","_text","_limit","_isOk","_proceed","_counter","_dis","_sfx","_started","_finished","_animState","_isMedic","_num_removed","_lockable","_combinationDisplay","_combination_1","_combination_2","_combination_3","_combination_4","_combination","_combination_1_Display","_playerUID","_OwnerUID"];
+private ["_passArray","_cancel","_position","_reason","_classnametmp","_classname","_tmpbuilt","_dir","_location","_text","_limit","_isOk","_proceed","_counter","_dis","_sfx","_started","_finished","_animState","_isMedic","_num_removed","_lockable","_combinationDisplay","_combination_1","_combination_2","_combination_3","_combination_4","_combination","_combination_1_Display","_playerUID","_OwnerUID","_toohigh"];
 
 //defines
 _cancel = _this select 0;
@@ -10,6 +10,7 @@ _isPole = _this select 5;
 _lockable = _this select 6;
 _dir = _this select 7;
 _reason = _this select 8;
+_requireplot = this select 9;
 
 _playerUID = [player] call FNC_GetPlayerUID;
 
@@ -40,6 +41,19 @@ if(!canbuild) then {
 	_reason = "Cannot build in a city.";
 };
 
+if ((DZE_BuildOnGround) && !(_requireplot)) then{
+	_toohigh = false;
+	if (_ispole) then{
+		if ((_position select 2) > DZE_MaxPlotHeight) then{_toohigh = true};
+	}else{
+		if ((_position select 2) > DZE_MaxNoPlotNeededHeight) then{_toohigh = true};
+	};
+	if (_toohigh) exitWith {
+		_cancel = true;
+		_reason = "This item must be built at ground level.";
+	};
+};
+
 if(!_cancel) then {
 
 	_classname = _classnametmp;
@@ -56,12 +70,7 @@ if(!_cancel) then {
 		_location set [2,0]; //reset Z axis to zero (above terrain)
 	};
 
-	if (surfaceIsWater _location) then {
-		_tmpbuilt setPosASL _location;
-		_location = ASLtoATL _location; //Database uses ATL
-	} else {
-		_tmpbuilt setPosATL _location;
-	};
+	[_tmpbuilt, _location] call FNC_SetPos;
 
 	cutText [format[(localize "str_epoch_player_138"),_text], "PLAIN DOWN"];
 
