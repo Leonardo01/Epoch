@@ -42,7 +42,7 @@ if (!isDedicated) then {
 		private ["_unit","_detail","_PUID"];
 		_unit = _this select 0;
 		_detail = _this select 1;
-		_PUID = [player] call FNC_GetPlayerUID;
+		_PUID = [false] call FNC_GetPlayerUID;
 		if(_unit == _PUID) then {
 			player setVariable["publish",_detail];
 		};
@@ -118,6 +118,7 @@ if (!isDedicated) then {
 	};
 	
 	FNC_check_owner =			compile preprocessFileLineNumbers "Custom\A_Plot_for_Life\Compile\fn_check_owner.sqf";
+	FNC_find_plots =			compile preprocessFileLineNumbers "Custom\A_Plot_for_Life\Compile\fn_find_plots.sqf";
 	
 	player_wearClothes =		compile preprocessFileLineNumbers "\z\addons\dayz_code\actions\player_wearClothes.sqf";
 	object_pickup = 			compile preprocessFileLineNumbers "\z\addons\dayz_code\actions\object_pickup.sqf";
@@ -549,19 +550,17 @@ if (!isDedicated) then {
 	// player_projectileNear = 		compile preprocessFileLineNumbers "\z\addons\dayz_code\compile\player_projectileNear.sqf";
 	
 	FNC_GetPlayerUID = {
-		private ["_object","_version","_PID"];
-		_object = _this select 0;
-		_version = productVersion select 3;
-		if (DayZ_UseSteamID) then {
-			_PID = GetPlayerUID _object;
-		} else {
-			if (_version >= 125548) then {
-				_PID = call (compile "GetPlayerUIDOld _object");
-			} else {
-				_PID = GetPlayerUID _object;
-				diag_log format["Your game version, %1, is less than the required for the old UID system; using Steam ID system instead. Update to 1.63.125548 (or latest steam beta)", _version];
+		private ["_onlyPUID", ""_who, "_PID"];
+		_onlyPUID = _this select 0;
+		if ((count _this) == 2) then {_who = this select 1}else{_who = player};
+		_playerUID = GetPlayerUID _who;
+		if !(_onlyPUID) then {
+			if !(DZE_APlotforLife) then {
+				_playerUID = _who getVariable ["CharacterID", "0"];
 			};
 		};
+		_PID = PlayerUID;
+
 		_PID
 	};
 	

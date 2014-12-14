@@ -87,11 +87,7 @@ if (!isNull _menClose && _hasPatient && !r_drag_sqf && !r_action && !_inVehicle 
 	_legsBroke = 	_unit getVariable ["hit_legs", 0] >= 1;
 	_armsBroke = 	_unit getVariable ["hit_hands", 0] >= 1;
 
-	if (DZE_APlotforLife) then {
-		_targetUID = [_unit] call FNC_GetPlayerUID;
-	}else{
-		_targetUID = _unit getVariable ["CharacterID", 0];
-	};
+	_targetUID = [false, _unit] call FNC_GetPlayerUID;
 
 	_friendlies =	player getVariable ["friendlies", []];
 	_playerMagazines = magazines player;

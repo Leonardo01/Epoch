@@ -33,11 +33,7 @@ _claimedBy = _obj getVariable["claimed","0"];
 _characterID = _obj getVariable["CharacterID","0"];
 _ownerID = _obj getVariable["ownerPUID","0"];;
 
-if (DZE_APlotforLife) then {
-	_playerUID = [player] call FNC_GetPlayerUID;
-}else{
-	_playerUID = dayz_characterID;
-};
+_playerUID = [false] call FNC_GetPlayerUID;
 
 if (_alreadyPacking == 1) exitWith {DZE_ActionInProgress = false; cutText [format[(localize "str_epoch_player_124"),_text], "PLAIN DOWN"]};
 

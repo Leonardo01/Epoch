@@ -10,7 +10,8 @@ private ["_distance","_plotpole","_playerUID","_isowner", "_findNearestObjects",
 _distance = (DZE_PlotPole select 0) + 1;
 _plotpole = nearestobject [(vehicle player),"Plastic_Pole_EP1_DZ"];
 
-_playerUID = [player] call FNC_GetPlayerUID;
+_playerID = [true] call FNC_GetPlayerUID;
+_playerUID = [false] call FNC_GetPlayerUID;
 
 // Check is owner of the plot pole.
 
@@ -45,7 +46,7 @@ if ((_isowner select 0 )) then {
 				};
 				
 				_position = 	[_object] call FNC_GetPos;
-				_worldspace = 	[round(direction _object),_position,_playerUID];
+				_worldspace = 	[round(direction _object),_position,_playerID];
 
 				_invW = getWeaponCargo _object;
 				{
@@ -79,11 +80,8 @@ if ((_isowner select 0 )) then {
 				PVDZE_fullobj_Publish = [_charID,_object,_worldspace,_classname, _inventory, _hitpoints, _damage, _fuel];
 				publicVariableServer "PVDZE_fullobj_Publish";
 				
-				if !(DZE_APlotforLife) then {
-					_object setvariable["ownerPUID", dayz_characterID];
-				}else{
-					_object setvariable["ownerPUID", _playerUID];	
-				};	
+				_object setvariable["ownerPUID", _playerUID];	
+
 			};
 		};
 	} count _findNearestObjects;

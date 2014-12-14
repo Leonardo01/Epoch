@@ -160,11 +160,7 @@ if (!isNull cursorTarget && !_inVehicle && !_isPZombie && (player distance curso
 	_hasKnife = 	"ItemKnife" in _itemsPlayer;
 	_hasToolbox = 	"ItemToolbox" in _itemsPlayer;
 
-	if (DZE_APlotforLife) then {
-		_playerUID = [player] call FNC_GetPlayerUID;
-	}else{
-		_playerUID = dayz_characterID;
-	};
+	_playerUID = [false] call FNC_GetPlayerUID;
 
 	_isMan = _cursorTarget isKindOf "Man";
 	_traderType = _typeOfCursorTarget;

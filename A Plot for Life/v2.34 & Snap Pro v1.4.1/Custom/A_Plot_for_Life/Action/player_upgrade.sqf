@@ -2,7 +2,7 @@
 	DayZ Base Building Upgrades
 	Made for DayZ Epoch please ask permission to use/edit/distrubute email vbawol@veteranbastards.com.
 */
-private ["_location","_dir","_classname","_missing","_text","_proceed","_num_removed","_object","_missingQty","_itemIn","_countIn","_qty","_removed","_removed_total","_tobe_removed_total","_objectID","_objectUID","_temp_removed_array","_textMissing","_newclassname","_requirements","_obj","_upgrade","_lockable","_combination_1","_combination_2","_combination_3","_combination","_objectCharacterID","_canBuildOnPlot","_friendlies","_nearestPole","_ownerID","_distance","_needText","_findNearestPoles","_findNearestPole","_IsNearPlot","_playerUID"];
+private ["_location","_dir","_classname","_missing","_text","_proceed","_num_removed","_object","_missingQty","_itemIn","_countIn","_qty","_removed","_removed_total","_tobe_removed_total","_objectID","_objectUID","_temp_removed_array","_textMissing","_newclassname","_requirements","_obj","_upgrade","_lockable","_combination_1","_combination_2","_combination_3","_combination","_objectCharacterID","_canBuildOnPlot","_friendlies","_nearestPole","_ownerID","_distance","_needText","_findNearestPoles","_findNearestPole","_IsNearPlot","_playerUID","_buildcheck","_plotcheck"];
 
 if(DZE_ActionInProgress) exitWith { cutText [(localize "str_epoch_player_52") , "PLAIN DOWN"]; };
 DZE_ActionInProgress = true;
@@ -10,51 +10,31 @@ DZE_ActionInProgress = true;
 player removeAction s_player_upgrade_build;
 s_player_upgrade_build = 1;
 
-
-_distance = 30;
 _needText = localize "str_epoch_player_246";
-
-// check for near plot
-_findNearestPoles = nearestObjects [(vehicle player), ["Plastic_Pole_EP1_DZ"], _distance];
-_findNearestPole = [];
-
-{
-	if (alive _x) then {
-		_findNearestPole set [(count _findNearestPole),_x];
-	};
-} count _findNearestPoles;
-
-_IsNearPlot = count (_findNearestPole);
-
 _canBuildOnPlot = false;
+
+_plotcheck = [player, false] call FNC_find_plots;
+_distance = _plotcheck select 0;
+_IsNearPlot = _plotcheck select 1;
+_nearestPole = _plotcheck select 2;
 
 if(_IsNearPlot == 0) then {
 	_canBuildOnPlot = true;
 } else {
-	
-	// check nearby plots ownership && then for friend status
-	_nearestPole = _findNearestPole select 0;
 
 	// Find owner 
 	_ownerID = _nearestPole getVariable["ownerPUID","0"];
 	
-	if (DZE_APlotforLife) then {
-		_playerUID = [player] call FNC_GetPlayerUID;
-	}else{
-		_playerUID = dayz_characterID;
-	};
+	_playerUID = [false] call FNC_GetPlayerUID;
 
 	// diag_log format["DEBUG BUILDING: %1 = %2", dayz_characterID, _ownerID];
 
 	// check if friendly to owner
-	if(_playerUID == _ownerID) then {
-		_canBuildOnPlot = true;		
-	} else {
-		_friendlies		= player getVariable ["friendlyTo",[]];
-		// check if friendly to owner
-		if(_ownerID in _friendlies) then {
-			_canBuildOnPlot = true;
-		};
+	_buildcheck = [player, _nearestPole] call FNC_check_owner;
+	_isowner = _buildcheck select 0;
+	_isfriendly = _buildcheck select 1;
+	if ((_isowner) || (_isfriendly)) then {
+		_canBuildOnPlot = true;
 	};
 };
 
@@ -80,6 +60,7 @@ _text = getText (configFile >> "CfgVehicles" >> _classname >> "displayName");
 
 // Find next upgrade
 _upgrade = getArray (configFile >> "CfgVehicles" >> _classname >> "upgradeBuilding");
+
 
 if ((count _upgrade) > 0) then {
 
@@ -174,7 +155,7 @@ if ((count _upgrade) > 0) then {
 				cutText [format[(localize "str_epoch_player_159"),_text], "PLAIN DOWN", 5];
 			};
 
-			_playerUID = [player] call FNC_GetPlayerUID;
+			_playerUID = [true] call FNC_GetPlayerUID;
 			PVDZE_obj_Swap = [_objectCharacterID,_object,[_dir,_location, _playerUID],_classname,_obj,player];
 			publicVariableServer "PVDZE_obj_Swap";
 

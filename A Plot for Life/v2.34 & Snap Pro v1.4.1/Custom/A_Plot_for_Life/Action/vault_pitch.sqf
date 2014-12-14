@@ -20,13 +20,8 @@ _offset_z_attach = 0.5;
 
 _location = player modeltoworld [_offset_x,_offset_y,_offset_z];
 
-_playerUID = [player] call FNC_GetPlayerUID;
-
-if (DZE_APlotforLife) then {
-	_OwnerUID = _playerUID;
-}else{
-	_OwnerUID = dayz_characterID;
-};
+_playerUID = [true] call FNC_GetPlayerUID;
+_OwnerUID = [false] call FNC_GetPlayerUID;
 
 // Allow placement anywhere.
 
@@ -42,8 +37,6 @@ if (!_hastentitem) exitWith {cutText [format[(localize "str_player_31"),_text,"p
 // blocked
 // Allow on concrete since we dont force to ground.
 // if (["concrete",dayz_surfaceType] call fnc_inString) then { _isOk = true; diag_log ("surface concrete"); };
-
-
 
 //diag_log ("Pitch Tent: " + str(_isok) );
 _dir = getDir player;

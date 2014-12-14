@@ -26,11 +26,7 @@ _ownerID = _obj getVariable["ownerPUID","0"];
 _objectID 	= _obj getVariable["ObjectID","0"];
 _objectUID	= _obj getVariable["ObjectUID","0"];
 
-if (DZE_APlotforLife) then {
-	_playerUID = [player] call FNC_GetPlayerUID;
-}else{
-	_PlayerUID = dayz_characterID;
-};
+_playerUID = [false] call FNC_GetPlayerUID;
 
 player removeAction s_player_packvault;
 s_player_packvault = 1;

@@ -9,13 +9,8 @@ _location set [2,0];
 _building = nearestObject [(vehicle player), "HouseBase"];
 _isOk = [(vehicle player),_building] call fnc_isInsideBuilding;
 
-_playerUID = [player] call FNC_GetPlayerUID;
-
-if (DZE_APlotforLife) then {
-	_OwnerUID = _playerUID;
-}else{
-	_OwnerUID = dayz_characterID;
-};
+_playerUID = [true] call FNC_GetPlayerUID;
+_OwnerUID = [false] call FNC_GetPlayerUID;
 
 //_isOk = true;
 

@@ -19,13 +19,8 @@ _canBuildOnPlot = false;
 _vehicle = vehicle player;
 _inVehicle = (_vehicle != player);
 
-_playerUID = [player] call FNC_GetPlayerUID;
-
-if (DZE_APlotforLife) then {
-	_playerID = [player] call FNC_GetPlayerUID;
-}else{
-	_playerID = dayz_characterID;
-};
+_playerUID = [true] call FNC_GetPlayerUID;  // Player UID
+_playerID = [false] call FNC_GetPlayerUID;  // Player UID or characterID depending on if A Plot for Life variable set true / false
 
 DZE_Q = false;
 DZE_Z = false;
@@ -126,25 +121,12 @@ if((count _offset) <= 0) then {
 
 _isPole = (_classname == "Plastic_Pole_EP1_DZ");
 _isLandFireDZ = (_classname == "Land_Fire_DZ");
-
-_distance = DZE_PlotPole select 0;
 _needText = localize "str_epoch_player_246";
 
-if(_isPole) then {
-	_distance = DZE_PlotPole select 1;
-};
-
-// check for near plot
-_findNearestPoles = nearestObjects [(vehicle player), ["Plastic_Pole_EP1_DZ"], _distance];
-_findNearestPole = [];
-
-{
-	if (alive _x) then {
-		_findNearestPole set [(count _findNearestPole),_x];
-	};
-} count _findNearestPoles;
-
-_IsNearPlot = count (_findNearestPole);
+_plotcheck = [player, _isPole] call FNC_find_plots;
+_distance = _plotcheck select 0;
+_IsNearPlot = _plotcheck select 1;
+_nearestPole = _plotcheck select 2;
 
 // If item is plot pole && another one exists within 45m
 if(_isPole && _IsNearPlot > 0) exitWith {  DZE_ActionInProgress = false; cutText [(format [localize "str_epoch_player_44", DZE_PlotPole select 1]) , "PLAIN DOWN"]; };
@@ -158,9 +140,6 @@ if(_IsNearPlot == 0) then {
 
 } else {
 	// Since there are plot poles nearby we need to check ownership && friend status
-
-	// check nearest pole only
-	_nearestPole = _findNearestPole select 0;
 
 	_buildcheck = [player, _nearestPole] call FNC_check_owner;
 	_isowner = _buildcheck select 0;

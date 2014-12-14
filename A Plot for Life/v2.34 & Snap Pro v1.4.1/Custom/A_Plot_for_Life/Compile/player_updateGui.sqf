@@ -58,9 +58,9 @@ diag_log format["DEBUG: templvl: %1 dayz_temperatur: %2 tempval: %3",_tempLvl, d
 
 if (_bloodLvl <= 0) then { 
 	_blood = "\z\addons\dayz_code\gui\status_blood_inside_1_ca.paa";
-	} else {
+} else {
 	_blood = "\z\addons\dayz_code\gui\status_blood_inside_" + str(_bloodLvl) + "_ca.paa";
-	};
+};
 
 if (_thirstLvl < 0) then { _thirstLvl = 0 };
 _thirst = "\z\addons\dayz_code\gui\status_thirst_inside_" + str(_thirstLvl) + "_ca.paa";
@@ -152,13 +152,8 @@ if (!isNull _humanityTarget && isPlayer _humanityTarget && alive _humanityTarget
 		// Display name if player opt-in || if friend
 		_friendlies = player getVariable ["friendlies", []];
 		
-		if (DZE_APlotforLife) then {
-			_playerUID = [player] call FNC_GetPlayerUID;
-			_rplayerUID = [_humanityTarget] call FNC_GetPlayerUID;
-		}else{
-			_playerUID = player getVariable ["CharacterID", "0"];
-			_rplayerUID = _humanityTarget getVariable ["CharacterID", "0"];
-		};
+		_playerUID = [false, player] call FNC_GetPlayerUID;
+		_rplayerUID = [false, _humanityTarget] call FNC_GetPlayerUID;
 		
 		_rfriendlies = _humanityTarget getVariable ["friendlies", []];
 		_rfriendlyTo = _humanityTarget getVariable ["friendlyTo", []];

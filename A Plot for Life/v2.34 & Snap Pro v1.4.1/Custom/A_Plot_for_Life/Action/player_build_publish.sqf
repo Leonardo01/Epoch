@@ -12,13 +12,7 @@ _dir = _this select 7;
 _reason = _this select 8;
 _requireplot = _this select 9;
 
-_playerUID = [player] call FNC_GetPlayerUID;
-
-if (DZE_APlotforLife) then {
-	_OwnerUID = _playerUID;
-}else{
-	_OwnerUID = dayz_characterID;
-};
+_playerUID = [false] call FNC_GetPlayerUID;
 
 _passArray = [];
 
